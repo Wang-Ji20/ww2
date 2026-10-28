@@ -1,6 +1,6 @@
-use crate::model::types::{CountryId, ProvinceId, Terrain};
+use crate::types::{CountryId, ProvinceId, Terrain};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct Province {
     pub id: ProvinceId,
     pub name: &'static str,
@@ -12,18 +12,10 @@ pub struct Province {
     pub mil_factories: u32,
     pub infrastructure: u32,
     pub neighbors: Vec<ProvinceId>,
-    pub map_pos: (u16, u16), // 用于 TUI 地图网格绘制 (x, y)
+    pub map_pos: (u16, u16), // 地图坐标 (x, y)，前端据此布局节点
 }
 
 impl Province {
-    pub fn is_controlled_by(&self, country: CountryId) -> bool {
-        self.controller == country
-    }
-
-    pub fn is_adjacent_to(&self, other: ProvinceId) -> bool {
-        self.neighbors.contains(&other)
-    }
-
     /// 函数式更新控制权
     pub fn with_controller(&self, new_controller: CountryId) -> Self {
         Self {

@@ -1,16 +1,16 @@
-use std::collections::{HashMap, VecDeque};
-use crate::model::province::Province;
-use crate::model::types::{CountryId, ProvinceId, Terrain};
+use std::collections::{BTreeMap, HashMap, VecDeque};
+use crate::province::Province;
+use crate::types::{CountryId, ProvinceId, Terrain};
 
-#[derive(Clone)]
+#[derive(Clone, serde::Serialize)]
 pub struct WorldMap {
-    pub provinces: HashMap<ProvinceId, Province>,
+    pub provinces: BTreeMap<ProvinceId, Province>,
 }
 
 impl WorldMap {
     /// 纯函数构造二战 1939 欧战开局地图
     pub fn new_europe_1939() -> Self {
-        let mut map = HashMap::new();
+        let mut map = BTreeMap::new();
 
         // 辅助宏或闭包构造省份
         let create_prov = |id: ProvinceId,
@@ -257,12 +257,7 @@ impl WorldMap {
     }
 
     /// 纯函数：广度优先寻路算法 (BFS Pathfinding)
-    pub fn find_path(
-        &self,
-        start: ProvinceId,
-        goal: ProvinceId,
-        passable_predicate: impl Fn(ProvinceId) -> bool,
-    ) -> Option<Vec<ProvinceId>> {
+    pub fn find_path(&self, start: ProvinceId, goal: ProvinceId) -> Option<Vec<ProvinceId>> {
         if start == goal {
             return Some(vec![start]);
         }
@@ -287,10 +282,8 @@ impl WorldMap {
             if let Some(prov) = self.provinces.get(&current) {
                 for &neighbor in &prov.neighbors {
                     if !came_from.contains_key(&neighbor) && neighbor != start {
-                        if neighbor == goal || passable_predicate(neighbor) {
-                            came_from.insert(neighbor, current);
-                            queue.push_back(neighbor);
-                        }
+                        came_from.insert(neighbor, current);
+                        queue.push_back(neighbor);
                     }
                 }
             }

@@ -1,10 +1,10 @@
-use std::collections::HashMap;
-use crate::model::division::{Division, DivisionId};
-use crate::model::types::{CountryId, ProvinceId, Terrain};
+use std::collections::BTreeMap;
+use crate::division::{Division, DivisionId};
+use crate::types::{CountryId, ProvinceId, Terrain};
 
 pub type CombatId = u32;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct Combat {
     pub id: CombatId,
     pub province: ProvinceId,
@@ -14,10 +14,9 @@ pub struct Combat {
     pub defenders: Vec<DivisionId>,
     /// 战局进度：0.0 (攻方溃退) 到 100.0 (守方崩溃沦陷)，初始 50.0
     pub progress: f32,
-    pub hours_elapsed: f32,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub enum CombatOutcome {
     Ongoing,
     AttackerVictory,
@@ -55,14 +54,13 @@ impl Combat {
             attackers,
             defenders,
             progress: 50.0,
-            hours_elapsed: 0.0,
         }
     }
 
     /// 纯函数结算战斗的一个时间片
     pub fn step(
         &self,
-        divisions: &HashMap<DivisionId, Division>,
+        divisions: &BTreeMap<DivisionId, Division>,
         terrain: Terrain,
         dt_hours: f32,
     ) -> CombatStepReport {
@@ -121,31 +119,31 @@ impl Combat {
 
         // 守方受损
         for &id in &self.defenders {
-            if let Some(div) = divisions.get(&id) {
-                if !div.is_broken() {
-                    let org_dmg = hourly_att_dmg / active_def_count;
-                    let hp_dmg = org_dmg * 0.15;
-                    damages.push(CombatDamageRecord {
-                        division_id: id,
-                        org_damage: org_dmg,
-                        hp_damage: hp_dmg,
-                    });
-                }
+            if let Some(div) = divisions.get(&id)
+                && !div.is_broken()
+            {
+                let org_dmg = hourly_att_dmg / active_def_count;
+                let hp_dmg = org_dmg * 0.15;
+                damages.push(CombatDamageRecord {
+                    division_id: id,
+                    org_damage: org_dmg,
+                    hp_damage: hp_dmg,
+                });
             }
         }
 
         // 攻方受损
         for &id in &self.attackers {
-            if let Some(div) = divisions.get(&id) {
-                if !div.is_broken() {
-                    let org_dmg = hourly_def_dmg / active_att_count;
-                    let hp_dmg = org_dmg * 0.15;
-                    damages.push(CombatDamageRecord {
-                        division_id: id,
-                        org_damage: org_dmg,
-                        hp_damage: hp_dmg,
-                    });
-                }
+            if let Some(div) = divisions.get(&id)
+                && !div.is_broken()
+            {
+                let org_dmg = hourly_def_dmg / active_att_count;
+                let hp_dmg = org_dmg * 0.15;
+                damages.push(CombatDamageRecord {
+                    division_id: id,
+                    org_damage: org_dmg,
+                    hp_damage: hp_dmg,
+                });
             }
         }
 

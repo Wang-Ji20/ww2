@@ -1,0 +1,25 @@
+{
+  "name": "ww2-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "wasm": "wasm-pack build ../crates/wasm --target web --out-dir ../../web/src/wasm --out-name ww2 --no-pack",
+    "dev": "pnpm run wasm --dev && vite",
+    "build": "pnpm run wasm --release && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "wasm-pack": "^0.15.0"
+  }
+}

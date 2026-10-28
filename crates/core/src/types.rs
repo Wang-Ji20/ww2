@@ -1,6 +1,4 @@
-use std::fmt;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 pub enum CountryId {
     Germany,
     Poland,
@@ -10,14 +8,6 @@ pub enum CountryId {
 }
 
 impl CountryId {
-    pub const ALL: [CountryId; 5] = [
-        CountryId::Germany,
-        CountryId::Poland,
-        CountryId::France,
-        CountryId::UnitedKingdom,
-        CountryId::SovietUnion,
-    ];
-
     pub fn name(&self) -> &'static str {
         match self {
             CountryId::Germany => "德意志国 (Germany)",
@@ -38,42 +28,37 @@ impl CountryId {
         }
     }
 
-    pub fn flag(&self) -> &'static str {
+    /// 首都：新编师团的默认部署地
+    pub fn capital(&self) -> ProvinceId {
         match self {
-            CountryId::Germany => "卐",
-            CountryId::Poland => "🇵🇱",
-            CountryId::France => "🇫🇷",
-            CountryId::UnitedKingdom => "🇬🇧",
-            CountryId::SovietUnion => "☭",
+            CountryId::Germany => ProvinceId::Berlin,
+            CountryId::Poland => ProvinceId::Warsaw,
+            CountryId::France => ProvinceId::Paris,
+            CountryId::UnitedKingdom => ProvinceId::London,
+            CountryId::SovietUnion => ProvinceId::Moscow,
         }
     }
 }
 
-impl fmt::Display for CountryId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.short_name())
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 pub enum ProvinceId {
-    Berlin = 0,
-    Cologne = 1,
-    Munich = 2,
-    EastPrussia = 3,
-    Danzig = 4,
-    Warsaw = 5,
-    Krakow = 6,
-    Paris = 7,
-    Maginot = 8,
-    Calais = 9,
-    London = 10,
-    Dover = 11,
-    Minsk = 12,
-    Kiev = 13,
-    Leningrad = 14,
-    Moscow = 15,
-    Stalingrad = 16,
+    Berlin,
+    Cologne,
+    Munich,
+    EastPrussia,
+    Danzig,
+    Warsaw,
+    Krakow,
+    Paris,
+    Maginot,
+    Calais,
+    London,
+    Dover,
+    Minsk,
+    Kiev,
+    Leningrad,
+    Moscow,
+    Stalingrad,
 }
 
 impl ProvinceId {
@@ -120,7 +105,7 @@ impl ProvinceId {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum Terrain {
     Plains,
     Forest,
@@ -152,7 +137,7 @@ impl Terrain {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum UnitType {
     Infantry,
     Panzer,
@@ -176,17 +161,42 @@ impl UnitType {
         }
     }
 
-    /// 基础属性：(最大组织度, 软攻, 硬攻, 防御, 突破, 速度km/h, 军工需求, 人力需求)
-    pub fn base_stats(&self) -> (f32, f32, f32, f32, f32, f32, f32, f32) {
-        match self {
-            UnitType::Infantry => (60.0, 24.0, 4.0, 32.0, 8.0, 4.0, 50.0, 10_000.0),
-            UnitType::Panzer => (40.0, 36.0, 28.0, 18.0, 38.0, 12.0, 150.0, 8_000.0),
-            UnitType::Motorized => (50.0, 28.0, 10.0, 24.0, 20.0, 9.0, 90.0, 9_000.0),
+    /// 兵种基础属性
+    pub fn base_stats(&self) -> UnitStats {
+        let (max_organization, soft_attack, hard_attack, defense, breakthrough, speed_kmh, production_cost, manpower_cost) =
+            match self {
+                UnitType::Infantry => (60.0, 24.0, 4.0, 32.0, 8.0, 4.0, 50.0, 10_000.0),
+                UnitType::Panzer => (40.0, 36.0, 28.0, 18.0, 38.0, 12.0, 150.0, 8_000.0),
+                UnitType::Motorized => (50.0, 28.0, 10.0, 24.0, 20.0, 9.0, 90.0, 9_000.0),
+            };
+        UnitStats {
+            max_organization,
+            soft_attack,
+            hard_attack,
+            defense,
+            breakthrough,
+            speed_kmh,
+            production_cost,
+            manpower_cost,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize)]
+pub struct UnitStats {
+    pub max_organization: f32,
+    pub soft_attack: f32,
+    pub hard_attack: f32,
+    pub defense: f32,
+    pub breakthrough: f32,
+    pub speed_kmh: f32,
+    /// 完成一个师所需的军工产出
+    pub production_cost: f32,
+    /// 师团完工部署时消耗的人力
+    pub manpower_cost: f32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub struct GameDate {
     pub year: u16,
     pub month: u8,
@@ -215,11 +225,7 @@ impl GameDate {
         let mut d = self.day as u32 + add_days;
 
         loop {
-            let days_in_cur_month = match m {
-                2 => 28,
-                4 | 6 | 9 | 11 => 30,
-                _ => 31,
-            };
+            let days_in_cur_month = days_in_month(y, m);
             if d <= days_in_cur_month {
                 break;
             }
@@ -240,12 +246,15 @@ impl GameDate {
     }
 }
 
-impl fmt::Display for GameDate {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{:04}年{:02}月{:02}日 {:02}:00",
-            self.year, self.month, self.day, self.hour
-        )
+fn is_leap_year(year: u16) -> bool {
+    (year.is_multiple_of(4) && !year.is_multiple_of(100)) || year.is_multiple_of(400)
+}
+
+fn days_in_month(year: u16, month: u8) -> u32 {
+    match month {
+        2 if is_leap_year(year) => 29,
+        2 => 28,
+        4 | 6 | 9 | 11 => 30,
+        _ => 31,
     }
 }

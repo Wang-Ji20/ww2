@@ -1,8 +1,9 @@
-use crate::model::types::{CountryId, ProvinceId, UnitType};
+use crate::types::{CountryId, ProvinceId, UnitType};
 
 pub type DivisionId = u32;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(tag = "kind")]
 pub enum DivisionOrder {
     Idle,
     Moving {
@@ -13,10 +14,12 @@ pub enum DivisionOrder {
     Fighting {
         combat_province: ProvinceId,
         is_attacker: bool,
+        /// 攻方胜利后继续行军的剩余路径
+        resume_path: Vec<ProvinceId>,
     },
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct Division {
     pub id: DivisionId,
     pub name: String,
@@ -37,7 +40,7 @@ pub struct Division {
 impl Division {
     /// 纯函数构造师团
     pub fn new(id: DivisionId, name: String, country: CountryId, location: ProvinceId, unit_type: UnitType) -> Self {
-        let (max_org, soft, hard, def, brk, speed, _, _) = unit_type.base_stats();
+        let stats = unit_type.base_stats();
         Self {
             id,
             name,
@@ -45,13 +48,13 @@ impl Division {
             location,
             unit_type,
             strength: 100.0,
-            organization: max_org,
-            max_organization: max_org,
-            soft_attack: soft,
-            hard_attack: hard,
-            defense: def,
-            breakthrough: brk,
-            speed_kmh: speed,
+            organization: stats.max_organization,
+            max_organization: stats.max_organization,
+            soft_attack: stats.soft_attack,
+            hard_attack: stats.hard_attack,
+            defense: stats.defense,
+            breakthrough: stats.breakthrough,
+            speed_kmh: stats.speed_kmh,
             order: DivisionOrder::Idle,
         }
     }

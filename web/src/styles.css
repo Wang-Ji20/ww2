@@ -1,0 +1,600 @@
+:root {
+  color-scheme: dark;
+  --bg: #12151a;
+  --panel: #1a1f26;
+  --panel-2: #222832;
+  --line: #2e3540;
+  --text: #e4e1d8;
+  --muted: #8b919b;
+  --accent: #e3b341;
+  --danger: #e0564f;
+  --ok: #5fb878;
+  --info: #5b9bd5;
+  --node-stroke: #0d0f12;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+kbd {
+  font-family: var(--mono);
+  font-size: 0.75em;
+  margin-left: 0.4em;
+  padding: 0 0.3em;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--muted);
+}
+
+.muted {
+  color: var(--muted);
+}
+.warn {
+  color: var(--danger);
+}
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───── 布局 ───── */
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "top top"
+    "map side"
+    "bottom bottom";
+  gap: 10px;
+  min-height: 100vh;
+  padding: 10px 16px;
+}
+.top-bar {
+  grid-area: top;
+}
+.map-area {
+  grid-area: map;
+}
+.sidebar {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+.bottom {
+  grid-area: bottom;
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 10px;
+}
+
+@media (max-width: 1100px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "top" "map" "side" "bottom";
+  }
+  .bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+/* ───── 顶栏 ───── */
+
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+.top-bar h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.date {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  min-width: 17ch;
+}
+.play.paused {
+  background: #3a2a1a;
+  border-color: var(--accent);
+}
+.play.running {
+  background: #1d3324;
+  border-color: var(--ok);
+}
+.speed {
+  display: flex;
+}
+.speed button {
+  border-radius: 0;
+  padding: 0.3rem 0.55rem;
+  font-family: var(--mono);
+}
+.speed button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.speed button:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.speed button.active {
+  background: var(--accent);
+  color: #1a1404;
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0 0 0 auto;
+}
+.stats div {
+  display: flex;
+  flex-direction: column;
+}
+.stats dt {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.stats dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.tension {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ───── 计量条 ───── */
+
+.meter {
+  display: inline-block;
+  width: 64px;
+  height: 6px;
+  border-radius: 3px;
+  background: #0c0e11;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  transition: width 0.15s linear;
+}
+.meter.org > span {
+  background: var(--ok);
+}
+.meter.hp > span {
+  background: #9ccc65;
+}
+.meter.danger > span {
+  background: var(--danger);
+}
+.meter.info > span {
+  background: var(--info);
+}
+.meter.prod > span {
+  background: var(--accent);
+}
+
+/* ───── 地图 ───── */
+
+.map-area {
+  background: radial-gradient(ellipse at 40% 40%, #1b232c, #10141a 75%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+.war-map {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  min-width: 720px;
+  user-select: none;
+}
+.war-map.targeting .node {
+  cursor: crosshair;
+}
+.map-grid {
+  stroke: #ffffff08;
+  stroke-width: 1;
+}
+.edge {
+  stroke: #3d4652;
+  stroke-width: 2;
+}
+.edge.front {
+  stroke: #7a3d3a;
+  stroke-width: 2.5;
+  stroke-dasharray: 6 4;
+}
+.march {
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-dasharray: 2 4;
+}
+.march-count {
+  fill: currentColor;
+  font: 600 11px var(--mono);
+  text-anchor: middle;
+}
+.order-preview {
+  color: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 8 5;
+}
+.node {
+  cursor: pointer;
+}
+.node-body {
+  transition: filter 0.1s;
+}
+.node.hover .node-body {
+  filter: brightness(1.25);
+}
+.select-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+.node text {
+  text-anchor: middle;
+  pointer-events: none;
+}
+.node-count {
+  font: 700 15px var(--mono);
+  fill: #0d0f12;
+}
+.node-name {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--text);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+}
+.node-meta {
+  font-size: 10px;
+  fill: var(--muted);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+}
+.node-combat {
+  font-size: 15px;
+  fill: var(--danger);
+}
+.combat-ring circle {
+  fill: none;
+  stroke-width: 5;
+}
+.combat-track {
+  opacity: 0.5;
+}
+.combat-fill {
+  transition: stroke-dasharray 0.2s linear;
+}
+.map-legend {
+  margin: 4px 6px 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* ───── 侧栏 ───── */
+
+.country-tag {
+  display: inline-block;
+  font: 700 0.7rem var(--mono);
+  color: #0d0f12;
+  padding: 1px 5px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 12px;
+  margin: 0;
+}
+.facts dt {
+  color: var(--muted);
+}
+.facts dd {
+  margin: 0;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.chip {
+  padding: 1px 8px;
+  font-size: 0.8rem;
+  border-radius: 10px;
+}
+.targeting-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border: 1px dashed var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+}
+.division-list,
+.production-list,
+.diplomacy-list,
+.log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.division-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+.division-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 4px 6px;
+}
+.division-row:disabled {
+  opacity: 0.75;
+}
+.division-row.active {
+  border-color: var(--accent);
+  background: #2a2618;
+}
+.division-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.unit-icon {
+  font: 0.75rem var(--mono);
+  color: var(--accent);
+}
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bars .meter {
+  width: 48px;
+  height: 4px;
+}
+.status {
+  font-size: 0.75rem;
+  color: var(--muted);
+  min-width: 3.5em;
+  text-align: right;
+}
+.status.fighting {
+  color: var(--danger);
+}
+.status.moving {
+  color: var(--info);
+}
+.division-card {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.division-card h3 {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+}
+.gauge {
+  display: grid;
+  grid-template-columns: 4em 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.gauge .meter {
+  width: 100%;
+  height: 8px;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, auto 1fr);
+  gap: 2px 6px;
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+}
+.stat-grid dt {
+  color: var(--muted);
+}
+.stat-grid dd {
+  margin: 0;
+  font-family: var(--mono);
+}
+
+/* ───── 底部 ───── */
+
+.production-list li {
+  display: grid;
+  grid-template-columns: 3.2em 4.5em 4.5em minmax(40px, 1fr) 3.5em auto;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.diplomacy-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+}
+.relation {
+  min-width: 3.5em;
+}
+.relation.war {
+  color: var(--danger);
+}
+.relation.peace {
+  color: var(--ok);
+}
+.relation.capitulated {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.diplomacy-list + button,
+.confirm {
+  margin-top: 8px;
+}
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+button.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+button.danger-outline {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.log-list {
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+.log {
+  padding: 2px 0;
+  border-bottom: 1px solid #ffffff08;
+}
+.log.victory {
+  color: var(--accent);
+}
+.log.loss {
+  color: var(--danger);
+}
+.log.battle {
+  color: #7cc4d8;
+}
+.fatal {
+  padding: 2rem;
+  color: var(--danger);
+}
+
+.icon-button {
+  padding: 0 0.45rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #0008;
+  backdrop-filter: blur(2px);
+}
+.overlay-card {
+  min-width: 300px;
+  padding: 24px 32px;
+  text-align: center;
+  background: var(--panel);
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+}
+.overlay-card.defeat {
+  border-color: var(--danger);
+}
+.overlay-card h2 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+}
+.overlay-card.defeat h2 {
+  color: var(--danger);
+}
+
+.production-list .meter {
+  width: 100%;
+}
+.production-list .num,
+.production-list .warn {
+  text-align: right;
+}
