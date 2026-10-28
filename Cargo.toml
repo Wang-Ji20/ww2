@@ -1,0 +1,15 @@
+[package]
+name = "ww2"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { version = "0.20", default-features = false, features = ["bevy_state"] }
+ratatui = "0.30"
+crossterm = "0.29"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
