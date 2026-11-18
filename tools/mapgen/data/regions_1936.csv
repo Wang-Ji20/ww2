@@ -1,0 +1,23 @@
+# 必须独立的地区（研究笔记 partition-principles.md §2–3）。省份合并不跨越地区边界。
+# mode=single：整个地区（按归属国分开）只成一个省份，并以地区名命名；mode=group：地区内可有多个省份。
+# 每个砖块按面积过半归入第一个匹配的地区。表达式语法同 owners_1936.csv。
+id,name,name_en,mode,expr
+danzig,但泽,Danzig,single,ohm:Free City of Danzig
+memel,梅梅尔,Memel,single,ohm:Memel + ohm:Stadtkreis Memel + ohm:Heydekrug + ohm:Pogegen
+saar,萨尔,Saar,single,ohm:Saarland
+london,伦敦,London,single,ne:GBR/region=Greater London
+paris,巴黎,Paris,single,ne:FRA/iso=FR-75|FR-77|FR-78|FR-91|FR-92|FR-93|FR-94|FR-95
+teschen,切申,Teschen,single,hb1938:Poland & hb1930:Czechoslovakia
+sudetenland,苏台德,Sudetenland,group,hb1938:Germany & hb1930:Czechoslovakia
+south_slovakia,南斯洛伐克,Southern Slovakia,group,hb1938:Hungary & hb1930:Czechoslovakia
+subcarpathia,喀尔巴阡罗斯,Subcarpathian Ruthenia,group,ohm:Subcarpathian Rus'
+alsace_lorraine,阿尔萨斯-洛林,Alsace-Lorraine,group,ne:FRA/iso=FR-67|FR-68|FR-57
+rhineland,莱茵兰,Rhineland,group,ohm:Rhine Province + ohm:Palatinate
+corridor,前普鲁士领土,Former Prussian lands,group,hb1914:German Empire & hb1930:Poland
+vilna,维尔诺,Wilno,group,hb1938:Poland & ne:LTU
+bessarabia,比萨拉比亚,Bessarabia,group,hb1938:Romania & ne:MDA + hb1938:Romania & ne:UKR/name=Odessa
+north_bukovina,北布科维纳,Northern Bukovina,single,hb1938:Romania & ne:UKR/name=Chernivtsi
+north_transylvania,北特兰西瓦尼亚,Northern Transylvania,group,ne:ROU/name=Bihor|Satu Mare|Salaj|Maramures|Bistrita-Nasaud|Cluj|Mures|Harghita|Covasna
+south_dobruja,南多布罗加,Southern Dobruja,single,hb1938:Romania & ne:BGR
+finnish_karelia,卡累利阿,Karelia,group,hb1938:Finland & ne:RUS
+hatay,亚历山大勒塔,Alexandretta,single,ne:TUR/name=Hatay

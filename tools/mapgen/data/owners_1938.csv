@@ -1,0 +1,130 @@
+# historical-basemaps world_1938 中的 NAME 或 SUBJECTO → 1939 年国家标签。先按 NAME 匹配，再按 SUBJECTO。
+# 数据集中明显的错误在此纠正（如柬埔寨、交趾支那被标为日本属地）。
+key,tag
+Germany,GER
+Italy,ITA
+Empire of Japan,JAP
+Saipan,JAP
+United Kingdom,ENG
+United Kingdom of Great Britain and Ireland,ENG
+France,FRA
+Poland,POL
+Canada,CAN
+Dominion of Newfoundland,ENG
+Australia,AST
+New Zealand,NZL
+Niue,NZL
+Samoa,NZL
+Union of South Africa,SAF
+Walbis Bay,SAF
+USSR,SOV
+Mongolia,MON
+United States,USA
+Puerto Rico,USA
+American Samoa,USA
+United States Virgin Islands,USA
+Chinese warlords,CHI
+Xinjiang,SIK
+Tibet,TIB
+Siam,SIA
+Nepal,NEP
+Bhutan,BHU
+Afghanistan,AFG
+Iran,IRN
+Mesopotamia (GB),IRQ
+Saudi Arabia,SAU
+Hejaz,SAU
+Hail,SAU
+Emirate of Bin Shal'an,SAU
+Yemen,YEM
+Muscat and Oman,OMA
+Turkey,TUR
+Egypt,EGY
+Liberia,LBR
+Spain,SPR
+Portugal,POR
+Ireland,IRE
+Belgium,BEL
+Netherlands,HOL
+Netherlands Antilles,HOL
+Suriname,HOL
+Luxembourg,LUX
+Switzerland,SWI
+Denmark,DEN
+Norway,NOR
+Sweden,SWE
+Finland,FIN
+Estonia,EST
+Latvia,LAT
+Lithuania,LIT
+Hungary,HUN
+Czechoslovakia,CZE
+Romania,ROM
+Bulgaria,BUL
+Yugoslavia,YUG
+Greece,GRE
+Albania,ALB
+Andorra,SPR
+Mexico,MEX
+Guatemala,GUA
+Honduras,HON
+El Salvador,ELS
+Nicaragua,NIC
+Costa Rica,COS
+Panama,PAN
+Cuba,CUB
+Haiti,HAI
+Dominican Republic,DOM
+Colombia,COL
+Venezuela,VEN
+Ecuador,ECU
+Peru,PRU
+Bolivia,BOL
+Chile,CHL
+Argentina,ARG
+Uruguay,URU
+Paraguay,PAR
+Brazil,BRA
+Cambodia,FRA
+Cochin China,FRA
+Laos,FRA
+Togo,FRA
+Tunisia,FRA
+French Guiana,FRA
+French Somaliland,FRA
+Guadeloupe,FRA
+Martinique,FRA
+Saint Barthelemy,FRA
+Saint Martin,FRA
+Wallis and Futuna Islands,FRA
+Libya,ITA
+Burundi,BEL
+Guinea-Bissau,POR
+India,ENG
+Ceylon,ENG
+Brunei,ENG
+Sudan,ENG
+Israel,ENG
+Jordan,ENG
+Kuwait,ENG
+Qatar,ENG
+Trucial Oman,ENG
+Malawi,ENG
+Belize,ENG
+Guyana,ENG
+Bahamas,ENG
+Barbados,ENG
+Jamaica,ENG
+Trinidad,ENG
+Grenada,ENG
+Dominica,ENG
+Montserrat,ENG
+Anguilla,ENG
+Antigua and Barbuda,ENG
+Saint Kitts and Nevis,ENG
+Saint Lucia,ENG
+Saint Vincent and the Grenadines,ENG
+Turks and Caicos Islands,ENG
+"Gambia, The",ENG
+Fiji,ENG
+Tonga,ENG

@@ -1,11 +1,12 @@
-use crate::types::{CountryId, UnitType};
+use crate::modpack::UnitTypeDef;
+use crate::types::{CountryId, UnitTypeId};
 
 /// 每条新开生产线默认分配的军工厂数
 pub const FACTORIES_PER_LINE: u32 = 5;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct ProductionLine {
-    pub unit_type: UnitType,
+    pub unit_type: UnitTypeId,
     pub assigned_factories: u32,
     pub progress: f32, // 达到 cost 即完成生产
 }
@@ -66,14 +67,14 @@ impl Country {
     }
 
     /// 纯函数：新开一条生产线；没有空闲军工厂时返回 None
-    pub fn queue_production(&self, unit_type: UnitType) -> Option<Self> {
+    pub fn queue_production(&self, unit_type: &str) -> Option<Self> {
         let factories = FACTORIES_PER_LINE.min(self.free_factories());
         if factories == 0 {
             return None;
         }
         let mut production_queue = self.production_queue.clone();
         production_queue.push(ProductionLine {
-            unit_type,
+            unit_type: unit_type.to_string(),
             assigned_factories: factories,
             progress: 0.0,
         });
@@ -93,7 +94,8 @@ impl Country {
     }
 
     /// 纯函数：生产与资源推进。师团完工时扣除人力；人力不足则产线停在完工状态等待补充。
-    pub fn step_economy(&self, dt_hours: f32) -> (Self, Vec<UnitType>) {
+    /// 兵种不在 `unit_types` 中的产线不推进。
+    pub fn step_economy(&self, unit_types: &[UnitTypeDef], dt_hours: f32) -> (Self, Vec<UnitTypeId>) {
         if self.has_capitulated {
             return (self.clone(), Vec::new());
         }
@@ -104,7 +106,9 @@ impl Country {
         let mut manpower = self.manpower + mp_growth;
         let mut completed_units = Vec::new();
         let updated_queue = self.production_queue.iter().map(|line| {
-            let stats = line.unit_type.base_stats();
+            let Some(stats) = unit_types.iter().find(|u| u.id == line.unit_type).map(|u| u.stats) else {
+                return line.clone();
+            };
             let hourly_prod = (line.assigned_factories as f32 * 2.5) * (dt_hours / 24.0);
             let new_progress = line.progress + hourly_prod;
 
@@ -112,7 +116,7 @@ impl Country {
                 new_progress
             } else if manpower >= stats.manpower_cost {
                 manpower -= stats.manpower_cost;
-                completed_units.push(line.unit_type);
+                completed_units.push(line.unit_type.clone());
                 new_progress - stats.production_cost
             } else {
                 stats.production_cost

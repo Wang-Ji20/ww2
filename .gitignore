@@ -1,2 +1,13 @@
 /target
 node_modules
+
+# 地图生成器：下载的原始地理数据与 Python 环境
+tools/mapgen/.cache/
+tools/mapgen/.venv/
+__pycache__/
+*.pyc
+
+.mypy_cache
+
+# 研究项目：下载的原始数据缓存
+research/data/

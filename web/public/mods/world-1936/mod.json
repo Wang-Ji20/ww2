@@ -1,0 +1,16 @@
+{
+  "id": "world-1936",
+  "name": "世界 1936",
+  "version": "2.0.0",
+  "description": "991 个省份的 1936 年世界地图，以 1936 年的行政区划为基础，由 tools/mapgen 生成。",
+  "depends": [
+    "base"
+  ],
+  "data": [
+    "countries.json",
+    "provinces.json",
+    "scenarios/1936.json"
+  ],
+  "map": "map.topojson",
+  "license": "GPL-3.0-or-later：国界派生自 aourednik/historical-basemaps（GPL-3.0）。历史行政区来自 OpenHistoricalMap 贡献者（CC0）；现代行政区、城市与地理区域来自 Natural Earth（公有领域）；细分行政区来自 geoBoundaries（CHN PDDL 1.0；DEU dl-de/by-2-0；CZE Public Domain；USA Public Domain；CAN Open Government Licence – Canada 2.0；AUS CC BY 4.0；BRA CC BY 3.0 IGO；DZA Public Domain；EGY CC BY 3.0 IGO；SDN CC BY 3.0 IGO；COD CC BY 3.0 IGO）。"
+}

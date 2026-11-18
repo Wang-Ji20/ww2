@@ -1,0 +1,22 @@
+# 1936-01-01 的领土归属：以 1938 年底图（owners_1938.csv 映射）为底，按顺序覆盖。
+# 表达式语法见 layers.py：hb<年份>:<名称>、ne:<国家代码>[/<字段>=<值|值>]、ohm:<行政区名>，用 " & "（交）" + "（并）" - "（差）自左向右组合。
+# 中国境内的归属另见 china_1936.csv（按县）。
+expr,tag,note
+ne:TUR - ne:TUR/name=Hatay,TUR,1938 底图中《色佛尔条约》时代的亚美尼亚、希腊、叙利亚多边形侵入安纳托利亚
+ne:RUS,SOV,1938 底图在外贝加尔等处有错误归属；东普鲁士与芬兰旧土在后面覆盖
+hb1938:Finland & ne:RUS,FIN,卡累利阿地峡、拉多加卡累利阿、萨拉、佩察莫（1940/1944 年割让）
+ne:RUS/name=Tuva,TAN,唐努图瓦人民共和国（1944 年并入苏联）
+ne:ISL,ICE,冰岛王国（与丹麦共主邦联）
+ne:JOR,ENG,外约旦（英国委任统治；1938 底图并入美索不达米亚）
+ne:YEM - ne:YEM/name=`Adan|Lahij|Abyan|Shabwah|Hadramawt|Al Mahrah|Al Dali',YEM,也门王国（1938 底图中也门与英属也门是同一多边形）
+ne:YEM/name=`Adan|Lahij|Abyan|Shabwah|Hadramawt|Al Mahrah|Al Dali',ENG,亚丁及亚丁保护地
+ne:OMN,OMA,马斯喀特和阿曼
+ne:PER,PRU,秘鲁实际控制的亚马孙地区（1938 底图按厄瓜多尔的主张划界）
+ne:MAR/iso=MA-01,SPR,西属摩洛哥北部（含丹吉尔国际共管区，近似为现代丹吉尔—得土安大区）
+hb1930:Austria,AUT,德奥合并（1938-03）之前
+hb1930:Czechoslovakia,CZE,慕尼黑协定与第一次维也纳仲裁（1938）之前
+hb1930:Danzig,DNZ,但泽自由市
+ohm:Free City of Danzig,DNZ,但泽自由市（OHM 边界）
+hb1930:Albania,ALB,意大利入侵（1939-04）之前
+hb1930:Ethiopia,ETH,意属东非（1936-05）之前
+ne:GRC/name=Notio Aigaio,ITA,意属多德卡尼斯群岛

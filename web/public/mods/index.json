@@ -1,0 +1,11 @@
+{
+  "mods": [
+    "base",
+    "europe-mini",
+    "world-1936"
+  ],
+  "default": {
+    "mod": "world-1936",
+    "scenario": "1936"
+  }
+}

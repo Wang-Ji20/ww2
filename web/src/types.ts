@@ -1,16 +1,11 @@
 // 与 crates/core 中 serde 序列化结构一一对应的类型定义
 
-export type CountryId = "Germany" | "Poland" | "France" | "UnitedKingdom" | "SovietUnion";
-
-export type ProvinceId =
-  | "Berlin" | "Cologne" | "Munich" | "EastPrussia"
-  | "Danzig" | "Warsaw" | "Krakow"
-  | "Paris" | "Maginot" | "Calais"
-  | "London" | "Dover"
-  | "Minsk" | "Kiev" | "Leningrad" | "Moscow" | "Stalingrad";
-
-export type Terrain = "Plains" | "Forest" | "Mountain" | "Urban" | "Fortified";
-export type UnitType = "Infantry" | "Panzer" | "Motorized";
+/** 国家标签，如 "GER"，由模组定义 */
+export type CountryId = string;
+/** 省份编号，由模组定义 */
+export type ProvinceId = number;
+/** 兵种编号，如 "Infantry"，由模组定义 */
+export type UnitTypeId = string;
 export type DivisionId = number;
 
 export interface GameDate {
@@ -20,19 +15,78 @@ export interface GameDate {
   hour: number;
 }
 
+/* ───────────── 静态世界（worldJson，开局读取一次） ───────────── */
+
 export interface Province {
   id: ProvinceId;
   name: string;
-  original_owner: CountryId;
-  controller: CountryId;
-  terrain: Terrain;
+  name_en: string;
+  /** 剧本开局时的法理所有者 */
+  owner: CountryId;
+  terrain: string;
   victory_points: number;
   civ_factories: number;
   mil_factories: number;
   infrastructure: number;
   neighbors: ProvinceId[];
-  map_pos: [number, number];
+  /** [经度, 纬度] */
+  center: [number, number];
 }
+
+export interface TerrainDef {
+  id: string;
+  name: string;
+  attack_modifier: number;
+  defense_modifier: number;
+  movement_cost: number;
+}
+
+export interface UnitTypeDef {
+  id: UnitTypeId;
+  name: string;
+  icon: string;
+  max_organization: number;
+  soft_attack: number;
+  hard_attack: number;
+  defense: number;
+  breakthrough: number;
+  speed_kmh: number;
+  production_cost: number;
+  manpower_cost: number;
+}
+
+export interface CountryDef {
+  tag: CountryId;
+  name: string;
+  name_en: string;
+  color: string;
+}
+
+export interface FactionDef {
+  id: string;
+  name: string;
+  members: CountryId[];
+}
+
+export interface World {
+  scenario: {
+    id: string;
+    name: string;
+    description: string;
+    start_date: GameDate;
+    factions: FactionDef[];
+    majors: CountryId[];
+  };
+  terrains: Record<string, TerrainDef>;
+  /** 首个兵种为 AI 默认生产的兵种 */
+  unit_types: UnitTypeDef[];
+  countries: Record<CountryId, CountryDef>;
+  capitals: Record<CountryId, ProvinceId>;
+  // JSON 对象键总是字符串
+  map: { provinces: Record<string, Province> };
+}
+
+/* ───────────── 动态状态（stateJson，每帧读取） ───────────── */
 
 export type DivisionOrder =
   | { kind: "Idle" }
@@ -44,7 +98,7 @@ export interface Division {
   name: string;
   country: CountryId;
   location: ProvinceId;
-  unit_type: UnitType;
+  unit_type: UnitTypeId;
   strength: number;
   organization: number;
   max_organization: number;
@@ -57,7 +111,7 @@ export interface Division {
 }
 
 export interface ProductionLine {
-  unit_type: UnitType;
+  unit_type: UnitTypeId;
   assigned_factories: number;
   progress: number;
 }
@@ -86,9 +140,8 @@ export interface Combat {
 export type GameOutcome = "Victory" | "Defeat";
 
 export interface GameState {
-  map: { provinces: Record<ProvinceId, Province> };
+  controllers: Record<string, CountryId>;
   countries: Record<CountryId, Country>;
-  // JSON 对象键总是字符串
   divisions: Record<string, Division>;
   combats: Record<string, Combat>;
   outcome: GameOutcome | null;
@@ -112,27 +165,9 @@ export type UserAction =
   | { type: "SelectDivision"; args: DivisionId }
   | { type: "OrderMoveSelected"; args: ProvinceId }
   | { type: "OrderAllUnitsInProvince"; args: [ProvinceId, ProvinceId] }
-  | { type: "QueueProduction"; args: UnitType }
+  | { type: "QueueProduction"; args: UnitTypeId }
   | { type: "CancelProduction"; args: number }
-  | { type: "DeclareWarNextEnemy" };
-
-export interface Catalog {
-  provinces: { id: ProvinceId; name: string }[];
-  terrains: { id: Terrain; name: string; attack_modifier: number; defense_modifier: number }[];
-  unit_types: {
-    id: UnitType;
-    name: string;
-    icon: string;
-    max_organization: number;
-    soft_attack: number;
-    hard_attack: number;
-    defense: number;
-    breakthrough: number;
-    speed_kmh: number;
-    production_cost: number;
-    manpower_cost: number;
-  }[];
-}
+  | { type: "DeclareWar"; args: CountryId };
 
 /** 前端本地的行军部署状态：选好部队后再点击目标地块 */
 export type Targeting = null | { allUnits: boolean; source: ProvinceId };

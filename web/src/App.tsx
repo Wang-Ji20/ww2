@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Game } from "./wasm/ww2.js";
-import { useGame } from "./game";
+import { type LoadedGame, useGame } from "./game";
 import { WarMap } from "./components/WarMap";
 import { DiplomacyPanel, DivisionPanel, LogPanel, OutcomeOverlay, ProductionPanel, ProvincePanel, TopBar } from "./components/Panels";
-import type { Catalog, ProvinceId, Targeting } from "./types";
+import type { ProvinceId, Targeting } from "./types";
+import { WorldContext } from "./world-context";
 
-export function App({ game, catalog }: { game: Game; catalog: Catalog }) {
+export function App({ loaded, onMenu }: { loaded: LoadedGame; onMenu: () => void }) {
+  const { game, world, geometry } = loaded;
   const { state, act, restart } = useGame(game);
   // 行军部署只存在于前端：选中部队后直接点击目标，选中师团不会被途经地块改写
   const [targeting, setTargeting] = useState<Targeting>(null);
@@ -77,9 +78,9 @@ export function App({ game, catalog }: { game: Game; catalog: Catalog }) {
       } else if (e.key === "Escape") {
         setTargeting(null);
       } else if (e.key === "p") {
-        act({ type: "QueueProduction", args: "Infantry" });
+        act({ type: "QueueProduction", args: world.unit_types[0].id });
       } else if (e.key === "P") {
-        act({ type: "QueueProduction", args: "Panzer" });
+        act({ type: "QueueProduction", args: world.unit_types[world.unit_types.length - 1].id });
       } else {
         return;
       }
@@ -87,22 +88,29 @@ export function App({ game, catalog }: { game: Game; catalog: Catalog }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [act, startTargeting, targeting]);
+  }, [act, startTargeting, targeting, world]);
 
   return (
+    <WorldContext.Provider value={world}>
     <div className="app">
-      <TopBar state={state} act={act} />
+      <TopBar state={state} act={act} onMenu={onMenu} />
       <main className="map-area">
-        <WarMap state={state} catalog={catalog} targeting={targeting} onClick={onMapClick} onQuickOrder={onQuickOrder} />
+        <WarMap
+          state={state}
+          world={world}
+          geometry={geometry}
+          targeting={targeting}
+          onClick={onMapClick}
+          onQuickOrder={onQuickOrder}
+        />
         <p className="map-legend">
-          点击选择地块 · 右键命令选中师团前往 · Shift+右键全军突击 · 空格暂停 · 1–5 调速 · Tab 切换师团
+          滚轮缩放 · 拖动平移 · 点击选择地块 · 右键命令选中师团前往 · Shift+右键全军突击 · 空格暂停 · 1–5 调速 · Tab 切换师团
         </p>
       </main>
       <aside className="sidebar">
-        <ProvincePanel state={state} catalog={catalog} act={act} />
+        <ProvincePanel state={state} act={act} />
         <DivisionPanel
           state={state}
-          catalog={catalog}
           act={act}
           targeting={targeting}
           startTargeting={startTargeting}
@@ -110,7 +118,7 @@ export function App({ game, catalog }: { game: Game; catalog: Catalog }) {
         />
       </aside>
       <div className="bottom">
-        <ProductionPanel state={state} catalog={catalog} act={act} />
+        <ProductionPanel state={state} act={act} />
         <DiplomacyPanel state={state} act={act} />
         <LogPanel logs={state.logs} />
       </div>
@@ -120,7 +128,9 @@ export function App({ game, catalog }: { game: Game; catalog: Catalog }) {
           setTargeting(null);
           restart();
         }}
+        onMenu={onMenu}
       />
     </div>
+    </WorldContext.Provider>
   );
 }

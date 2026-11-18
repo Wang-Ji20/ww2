@@ -1,188 +1,64 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
-pub enum CountryId {
-    Germany,
-    Poland,
-    France,
-    UnitedKingdom,
-    SovietUnion,
-}
+use std::fmt;
+
+/// 省份编号，由模组数据定义
+pub type ProvinceId = u32;
+
+/// 国家标签（如 "GER"）：1–3 位大写字母或数字，按值复制
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct CountryId([u8; 3]);
 
 impl CountryId {
-    pub fn name(&self) -> &'static str {
-        match self {
-            CountryId::Germany => "德意志国 (Germany)",
-            CountryId::Poland => "波兰共和国 (Poland)",
-            CountryId::France => "法兰西共和国 (France)",
-            CountryId::UnitedKingdom => "大不列颠联合王国 (UK)",
-            CountryId::SovietUnion => "苏维埃社会主义共和国联盟 (USSR)",
-        }
+    /// 解析国家标签，不合法时返回 None
+    pub fn new(tag: &str) -> Option<Self> {
+        let bytes = tag.as_bytes();
+        let valid = (1..=3).contains(&bytes.len())
+            && bytes.iter().all(|b| b.is_ascii_uppercase() || b.is_ascii_digit());
+        valid.then(|| {
+            let mut buf = [0u8; 3];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            Self(buf)
+        })
     }
 
-    pub fn short_name(&self) -> &'static str {
-        match self {
-            CountryId::Germany => "GER",
-            CountryId::Poland => "POL",
-            CountryId::France => "FRA",
-            CountryId::UnitedKingdom => "ENG",
-            CountryId::SovietUnion => "SOV",
-        }
-    }
-
-    /// 首都：新编师团的默认部署地
-    pub fn capital(&self) -> ProvinceId {
-        match self {
-            CountryId::Germany => ProvinceId::Berlin,
-            CountryId::Poland => ProvinceId::Warsaw,
-            CountryId::France => ProvinceId::Paris,
-            CountryId::UnitedKingdom => ProvinceId::London,
-            CountryId::SovietUnion => ProvinceId::Moscow,
-        }
+    pub fn as_str(&self) -> &str {
+        let len = self.0.iter().position(|&b| b == 0).unwrap_or(3);
+        std::str::from_utf8(&self.0[..len]).expect("标签只含 ASCII")
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
-pub enum ProvinceId {
-    Berlin,
-    Cologne,
-    Munich,
-    EastPrussia,
-    Danzig,
-    Warsaw,
-    Krakow,
-    Paris,
-    Maginot,
-    Calais,
-    London,
-    Dover,
-    Minsk,
-    Kiev,
-    Leningrad,
-    Moscow,
-    Stalingrad,
-}
-
-impl ProvinceId {
-    pub const ALL: [ProvinceId; 17] = [
-        ProvinceId::Berlin,
-        ProvinceId::Cologne,
-        ProvinceId::Munich,
-        ProvinceId::EastPrussia,
-        ProvinceId::Danzig,
-        ProvinceId::Warsaw,
-        ProvinceId::Krakow,
-        ProvinceId::Paris,
-        ProvinceId::Maginot,
-        ProvinceId::Calais,
-        ProvinceId::London,
-        ProvinceId::Dover,
-        ProvinceId::Minsk,
-        ProvinceId::Kiev,
-        ProvinceId::Leningrad,
-        ProvinceId::Moscow,
-        ProvinceId::Stalingrad,
-    ];
-
-    pub fn name(&self) -> &'static str {
-        match self {
-            ProvinceId::Berlin => "柏林 (Berlin)",
-            ProvinceId::Cologne => "科隆 (Cologne)",
-            ProvinceId::Munich => "慕尼黑 (Munich)",
-            ProvinceId::EastPrussia => "东普鲁士 (Königsberg)",
-            ProvinceId::Danzig => "但泽走廊 (Danzig)",
-            ProvinceId::Warsaw => "华沙 (Warsaw)",
-            ProvinceId::Krakow => "克拉科夫 (Krakow)",
-            ProvinceId::Paris => "巴黎 (Paris)",
-            ProvinceId::Maginot => "马奇诺防线 (Maginot)",
-            ProvinceId::Calais => "加来海峡 (Calais)",
-            ProvinceId::London => "伦敦 (London)",
-            ProvinceId::Dover => "多佛尔 (Dover)",
-            ProvinceId::Minsk => "明斯克 (Minsk)",
-            ProvinceId::Kiev => "基辅 (Kiev)",
-            ProvinceId::Leningrad => "列宁格勒 (Leningrad)",
-            ProvinceId::Moscow => "莫斯科 (Moscow)",
-            ProvinceId::Stalingrad => "斯大林格勒 (Stalingrad)",
-        }
+impl fmt::Display for CountryId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
-pub enum Terrain {
-    Plains,
-    Forest,
-    Mountain,
-    Urban,
-    Fortified,
-}
-
-impl Terrain {
-    pub fn name(&self) -> &'static str {
-        match self {
-            Terrain::Plains => "平原",
-            Terrain::Forest => "森林",
-            Terrain::Mountain => "山地",
-            Terrain::Urban => "城市",
-            Terrain::Fortified => "要塞",
-        }
-    }
-
-    /// 函数式计算地形修正（攻方修正、守方修正）
-    pub fn combat_modifiers(&self) -> (f32, f32) {
-        match self {
-            Terrain::Plains => (1.0, 1.0),      // 平原攻守均衡，装甲突破有优势
-            Terrain::Forest => (0.8, 1.15),     // 森林攻方劣势
-            Terrain::Mountain => (0.6, 1.4),    // 山地极难攻打
-            Terrain::Urban => (0.7, 1.3),       // 城市巷战守方优势
-            Terrain::Fortified => (0.5, 1.6),   // 坚固永备工事守方大幅优势
-        }
+impl fmt::Debug for CountryId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.as_str())
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum UnitType {
-    Infantry,
-    Panzer,
-    Motorized,
-}
-
-impl UnitType {
-    pub fn name(&self) -> &'static str {
-        match self {
-            UnitType::Infantry => "步兵师",
-            UnitType::Panzer => "装甲师",
-            UnitType::Motorized => "机械化师",
-        }
-    }
-
-    pub fn icon(&self) -> &'static str {
-        match self {
-            UnitType::Infantry => "[Inf]",
-            UnitType::Panzer => "[Arm]",
-            UnitType::Motorized => "[Mot]",
-        }
-    }
-
-    /// 兵种基础属性
-    pub fn base_stats(&self) -> UnitStats {
-        let (max_organization, soft_attack, hard_attack, defense, breakthrough, speed_kmh, production_cost, manpower_cost) =
-            match self {
-                UnitType::Infantry => (60.0, 24.0, 4.0, 32.0, 8.0, 4.0, 50.0, 10_000.0),
-                UnitType::Panzer => (40.0, 36.0, 28.0, 18.0, 38.0, 12.0, 150.0, 8_000.0),
-                UnitType::Motorized => (50.0, 28.0, 10.0, 24.0, 20.0, 9.0, 90.0, 9_000.0),
-            };
-        UnitStats {
-            max_organization,
-            soft_attack,
-            hard_attack,
-            defense,
-            breakthrough,
-            speed_kmh,
-            production_cost,
-            manpower_cost,
-        }
+impl serde::Serialize for CountryId {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(self.as_str())
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize)]
+impl<'de> serde::Deserialize<'de> for CountryId {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let tag = String::deserialize(d)?;
+        CountryId::new(&tag)
+            .ok_or_else(|| serde::de::Error::custom(format!("非法国家标签 {tag:?}（应为 1–3 位大写字母或数字）")))
+    }
+}
+
+/// 兵种编号（如 "Infantry"），由模组数据定义
+pub type UnitTypeId = String;
+
+/// 地形编号（如 "Plains"），由模组数据定义
+pub type TerrainId = String;
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct UnitStats {
     pub max_organization: f32,
     pub soft_attack: f32,
@@ -196,7 +72,7 @@ pub struct UnitStats {
     pub manpower_cost: f32,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct GameDate {
     pub year: u16,
     pub month: u8,

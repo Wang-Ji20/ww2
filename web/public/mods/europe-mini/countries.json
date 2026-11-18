@@ -1,0 +1,34 @@
+{
+  "countries": [
+    {
+      "tag": "GER",
+      "name": "德意志国",
+      "name_en": "Germany",
+      "color": "#8d939c"
+    },
+    {
+      "tag": "POL",
+      "name": "波兰共和国",
+      "name_en": "Poland",
+      "color": "#c75b7a"
+    },
+    {
+      "tag": "FRA",
+      "name": "法兰西共和国",
+      "name_en": "France",
+      "color": "#4f78cc"
+    },
+    {
+      "tag": "ENG",
+      "name": "大不列颠联合王国",
+      "name_en": "United Kingdom",
+      "color": "#c9733e"
+    },
+    {
+      "tag": "SOV",
+      "name": "苏维埃社会主义共和国联盟",
+      "name_en": "Soviet Union",
+      "color": "#b8323a"
+    }
+  ]
+}

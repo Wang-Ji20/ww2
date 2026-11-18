@@ -1,29 +1,28 @@
-import type { CountryId, Division, GameDate, GameState, ProvinceId } from "./types";
-
-export const COUNTRY_COLOR: Record<CountryId, string> = {
-  Germany: "#8d939c",
-  Poland: "#c75b7a",
-  France: "#4f78cc",
-  UnitedKingdom: "#c9733e",
-  SovietUnion: "#b8323a",
-};
-
-export const COUNTRY_SHORT: Record<CountryId, string> = {
-  Germany: "GER",
-  Poland: "POL",
-  France: "FRA",
-  UnitedKingdom: "ENG",
-  SovietUnion: "SOV",
-};
-
-/** 宣战顺序与核心 DeclareWarNextEnemy 保持一致 */
-export const WAR_CANDIDATES: CountryId[] = ["France", "UnitedKingdom", "SovietUnion"];
+import type { CountryId, Division, GameDate, GameState, ProvinceId, World } from "./types";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
 export function formatDate(d: GameDate): string {
   return `${d.year}年${pad(d.month)}月${pad(d.day)}日 ${pad(d.hour)}:00`;
 }
+
+export function countryColor(world: World, tag: CountryId): string {
+  return world.countries[tag]?.color ?? "#777";
+}
+
+export function countryName(world: World, tag: CountryId): string {
+  return world.countries[tag]?.name ?? tag;
+}
+
+export function factionOf(world: World, tag: CountryId) {
+  return world.scenario.factions.find((f) => f.members.includes(tag));
+}
+
+export function areAllies(world: World, a: CountryId, b: CountryId): boolean {
+  return a === b || (factionOf(world, a)?.members.includes(b) ?? false);
+}
+
+export const controllerOf = (state: GameState, id: ProvinceId): CountryId => state.controllers[id];
 
 export function divisionsIn(state: GameState, province: ProvinceId): Division[] {
   return Object.values(state.divisions)
@@ -33,6 +32,17 @@ export function divisionsIn(state: GameState, province: ProvinceId): Division[] 
       const ownB = b.country === state.player_country ? 0 : 1;
       return ownA - ownB || a.country.localeCompare(b.country) || a.id - b.id;
     });
+}
+
+/** 某国当前控制的胜利点占其开局胜利点的百分比 */
+export function vpShare(world: World, state: GameState, tag: CountryId): number {
+  let orig = 0;
+  let cur = 0;
+  for (const p of Object.values(world.map.provinces)) {
+    if (p.owner === tag) orig += p.victory_points;
+    if (state.controllers[p.id] === tag) cur += p.victory_points;
+  }
+  return orig > 0 ? Math.round((cur / orig) * 100) : 0;
 }
 
 export function orderLabel(d: Division): string {

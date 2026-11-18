@@ -1,11 +1,41 @@
 import { useCallback, useEffect, useState } from "react";
-import init, { Game, catalogJson } from "./wasm/ww2.js";
-import type { Catalog, GameState, UserAction } from "./types";
+import init, { Game } from "./wasm/ww2.js";
+import { loadMods, type LoadedMods } from "./mods";
+import { loadGeometry, type MapGeometry } from "./topology";
+import type { GameState, Province, UserAction, World } from "./types";
 
-/** 加载 wasm 模块并创建 1939 开局 */
-export async function loadGame(): Promise<{ game: Game; catalog: Catalog }> {
-  await init();
-  return { game: new Game(), catalog: JSON.parse(catalogJson()) as Catalog };
+export interface Setup {
+  mod: string;
+  scenario: string;
+  /** 玩家国家；为空时使用剧本默认 */
+  player: string | null;
+}
+
+export interface LoadedGame {
+  game: Game;
+  world: World;
+  geometry: MapGeometry;
+  mods: LoadedMods;
+  setup: Setup;
+}
+
+let wasmReady: Promise<unknown> | null = null;
+
+/** 加载 wasm 模块（只初始化一次） */
+export function initEngine() {
+  wasmReady ??= init();
+  return wasmReady;
+}
+
+/** 读取模组、创建对局并解码地图轮廓；模组数据有误时抛出核心返回的全部错误 */
+export async function loadGame(setup: Setup, mods?: LoadedMods): Promise<LoadedGame> {
+  await initEngine();
+  const loaded = mods ?? (await loadMods(setup.mod));
+  const game = new Game(JSON.stringify(loaded.layers), setup.scenario, setup.player ?? undefined);
+  const world = JSON.parse(game.worldJson()) as World;
+  const provinces = Object.values(world.map.provinces) as Province[];
+  const geometry = await loadGeometry(loaded.mapUrl, provinces);
+  return { game, world, geometry, mods: loaded, setup };
 }
 
 function readState(game: Game): GameState {
@@ -18,6 +48,7 @@ export function useGame(game: Game) {
   const refresh = useCallback(() => setState(readState(game)), [game]);
 
   useEffect(() => {
+    if (state.is_paused || state.outcome !== null) return;
     let last = performance.now();
     let raf = requestAnimationFrame(function frame(now) {
       // 标签页切回时不追赶超过 1 秒的真实时间
@@ -27,7 +58,7 @@ export function useGame(game: Game) {
       raf = requestAnimationFrame(frame);
     });
     return () => cancelAnimationFrame(raf);
-  }, [game, refresh]);
+  }, [game, refresh, state.is_paused, state.outcome]);
 
   const act = useCallback(
     (action: UserAction) => {

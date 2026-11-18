@@ -1,0 +1,12 @@
+# 采用 OpenHistoricalMap 1936-01-01 有效行政区作为砖块的范围。scope 为 OHM 中的国家（admin_level=2）名称；
+# levels 为采用的级别（细的覆盖粗的）；names 非空时只取这些行政区；exclude 中的行政区不取（中心点落在本国、实属邻国者）。
+# 范围内的 Natural Earth 现代行政区被替换；后列出的范围覆盖先列出的。
+# tag 为该范围 1936 年的所属国：OHM 的日期版本比 1938 年底图可靠（后者把东普鲁士大半划给了波兰），归属以此为准。
+scope,levels,names,exclude,tag,note
+German Reich,4|5|6,,Salzburg,GER,普鲁士各省、各邦；行政区与县（东部较全）
+Austria,4,,,AUT,各州（维也纳缺失，由 Natural Earth 补）
+Czechoslovakia,4|5,,,CZE,波希米亚、摩拉维亚-西里西亚、喀尔巴阡罗斯；苏台德与捷克各区
+Poland,4,,Frontier March of Posen–West Prussia,POL,16 个省
+Free City of Danzig,2,,,DNZ,但泽自由市
+Lithuania,6,Memel|Stadtkreis Memel|Heydekrug|Pogegen,,LIT,梅梅尔区三县
+Denmark,4,,Iceland|Sorø County,DEN,各郡（索罗郡几何残缺，由 Natural Earth 补）

@@ -1,0 +1,301 @@
+{
+  "scenarios": [
+    {
+      "id": "1939",
+      "name": "1939 · 闪击波兰",
+      "description": "1939年9月1日，德意志国入侵波兰。",
+      "start_date": {
+        "year": 1939,
+        "month": 9,
+        "day": 1,
+        "hour": 6
+      },
+      "player": "GER",
+      "owners": {
+        "GER": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "POL": [
+          5,
+          6,
+          7
+        ],
+        "FRA": [
+          8,
+          9,
+          10
+        ],
+        "ENG": [
+          11,
+          12
+        ],
+        "SOV": [
+          13,
+          14,
+          15,
+          16,
+          17
+        ]
+      },
+      "countries": [
+        {
+          "tag": "GER",
+          "capital": 1,
+          "manpower": 1500000.0,
+          "civ_factories": 30,
+          "mil_factories": 45,
+          "production": [
+            {
+              "unit_type": "Panzer",
+              "factories": 15,
+              "progress": 30.0
+            },
+            {
+              "unit_type": "Infantry",
+              "factories": 10,
+              "progress": 20.0
+            }
+          ]
+        },
+        {
+          "tag": "POL",
+          "capital": 6,
+          "manpower": 600000.0,
+          "civ_factories": 10,
+          "mil_factories": 8
+        },
+        {
+          "tag": "FRA",
+          "capital": 8,
+          "manpower": 1100000.0,
+          "civ_factories": 22,
+          "mil_factories": 18
+        },
+        {
+          "tag": "ENG",
+          "capital": 11,
+          "manpower": 900000.0,
+          "civ_factories": 25,
+          "mil_factories": 20
+        },
+        {
+          "tag": "SOV",
+          "capital": 16,
+          "manpower": 3000000.0,
+          "civ_factories": 40,
+          "mil_factories": 35
+        }
+      ],
+      "divisions": [
+        {
+          "name": "第1装甲师 [古德里安]",
+          "country": "GER",
+          "location": 1,
+          "unit_type": "Panzer"
+        },
+        {
+          "name": "第2装甲师",
+          "country": "GER",
+          "location": 1,
+          "unit_type": "Panzer"
+        },
+        {
+          "name": "第3装甲师",
+          "country": "GER",
+          "location": 4,
+          "unit_type": "Panzer"
+        },
+        {
+          "name": "第1步兵师",
+          "country": "GER",
+          "location": 1,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "第2步兵师",
+          "country": "GER",
+          "location": 1,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "第4步兵师",
+          "country": "GER",
+          "location": 2,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "第5步兵师",
+          "country": "GER",
+          "location": 2,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "第7步兵师",
+          "country": "GER",
+          "location": 3,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "第9步兵师",
+          "country": "GER",
+          "location": 4,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "第10摩托化师",
+          "country": "GER",
+          "location": 3,
+          "unit_type": "Motorized"
+        },
+        {
+          "name": "莫德林集团军",
+          "country": "POL",
+          "location": 6,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "华沙防卫师",
+          "country": "POL",
+          "location": 6,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "波莫瑞集团军",
+          "country": "POL",
+          "location": 5,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "克拉科夫骑兵师",
+          "country": "POL",
+          "location": 7,
+          "unit_type": "Motorized"
+        },
+        {
+          "name": "波兹南步兵师",
+          "country": "POL",
+          "location": 7,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "马奇诺第1要塞要塞师",
+          "country": "FRA",
+          "location": 9,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "马奇诺第2要塞师",
+          "country": "FRA",
+          "location": 9,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "巴黎第1装甲师 [戴高乐]",
+          "country": "FRA",
+          "location": 8,
+          "unit_type": "Panzer"
+        },
+        {
+          "name": "法兰西第10步兵师",
+          "country": "FRA",
+          "location": 8,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "加来防卫军",
+          "country": "FRA",
+          "location": 10,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "皇家近卫装甲师",
+          "country": "ENG",
+          "location": 11,
+          "unit_type": "Panzer"
+        },
+        {
+          "name": "第1步兵师",
+          "country": "ENG",
+          "location": 11,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "海峡步兵师",
+          "country": "ENG",
+          "location": 12,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "近卫第1装甲师 [朱可夫]",
+          "country": "SOV",
+          "location": 16,
+          "unit_type": "Panzer"
+        },
+        {
+          "name": "近卫第2步兵师",
+          "country": "SOV",
+          "location": 16,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "基辅第44步兵师",
+          "country": "SOV",
+          "location": 14,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "基辅第7装甲师",
+          "country": "SOV",
+          "location": 14,
+          "unit_type": "Panzer"
+        },
+        {
+          "name": "明斯克步兵师",
+          "country": "SOV",
+          "location": 13,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "西区摩托化师",
+          "country": "SOV",
+          "location": 13,
+          "unit_type": "Motorized"
+        },
+        {
+          "name": "列宁格勒防卫军",
+          "country": "SOV",
+          "location": 15,
+          "unit_type": "Infantry"
+        },
+        {
+          "name": "斯大林格勒突击师",
+          "country": "SOV",
+          "location": 17,
+          "unit_type": "Infantry"
+        }
+      ],
+      "wars": [
+        [
+          "GER",
+          "POL"
+        ]
+      ],
+      "factions": [],
+      "majors": [
+        "POL",
+        "FRA",
+        "ENG",
+        "SOV",
+        "GER"
+      ],
+      "world_tension": 25.0,
+      "intro_logs": [
+        "【世界快讯】1939年9月1日：德意志国对波兰宣战！第二次世界大战爆发！",
+        "【最高统帅部】请调配装甲部队，沿但泽走廊与克拉科夫突破波兰防线！"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use crate::division::{Division, DivisionId};
-use crate::types::{CountryId, ProvinceId, Terrain};
+use crate::types::{CountryId, ProvinceId};
 
 pub type CombatId = u32;
 
@@ -57,14 +57,13 @@ impl Combat {
         }
     }
 
-    /// 纯函数结算战斗的一个时间片
+    /// 纯函数结算战斗的一个时间片；修正值为地形的（攻方修正，守方修正）
     pub fn step(
         &self,
         divisions: &BTreeMap<DivisionId, Division>,
-        terrain: Terrain,
+        (att_mod, def_mod): (f32, f32),
         dt_hours: f32,
     ) -> CombatStepReport {
-        let (att_mod, def_mod) = terrain.combat_modifiers();
 
         // 1. 函数式聚合攻方总战力与突破
         let (att_soft, att_hard, _att_def, att_brk) = self.attackers.iter()

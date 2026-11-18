@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { COUNTRY_COLOR, COUNTRY_SHORT, WAR_CANDIDATES, divisionsIn, formatDate, logTone, orderLabel } from "../display";
-import type { Catalog, CountryId, Division, GameState, Targeting, UnitType, UserAction } from "../types";
+import { areAllies, countryColor, countryName, divisionsIn, factionOf, formatDate, logTone, orderLabel, vpShare } from "../display";
+import type { CountryId, Division, GameState, Targeting, UserAction } from "../types";
+import { useWorld } from "../world-context";
 
 type Act = (action: UserAction) => void;
 
 function CountryTag({ id }: { id: CountryId }) {
+  const world = useWorld();
   return (
-    <span className="country-tag" style={{ background: COUNTRY_COLOR[id] }}>
-      {COUNTRY_SHORT[id]}
+    <span className="country-tag" style={{ background: countryColor(world, id) }} title={countryName(world, id)}>
+      {id}
     </span>
   );
 }
@@ -23,13 +25,18 @@ function Meter({ value, max, tone }: { value: number; max: number; tone: string 
 
 /* ───────────── 顶部状态栏 ───────────── */
 
-export function TopBar({ state, act }: { state: GameState; act: Act }) {
+export function TopBar({ state, act, onMenu }: { state: GameState; act: Act; onMenu: () => void }) {
+  const world = useWorld();
   const player = state.countries[state.player_country];
   const divisions = Object.values(state.divisions).filter((d) => d.country === state.player_country).length;
 
   return (
     <header className="top-bar">
-      <h1>钢铁雄心 · 极简欧战推演</h1>
+      <h1>
+        钢铁雄心 · 极简二战推演
+        <span className="muted"> {world.scenario.name} · </span>
+        <CountryTag id={state.player_country} />
+      </h1>
 
       <div className="clock">
         <span className="date">{formatDate(state.date)}</span>
@@ -86,29 +93,37 @@ export function TopBar({ state, act }: { state: GameState; act: Act }) {
           <dd>{divisions} 个师</dd>
         </div>
       </dl>
+      <button className="menu-button" onClick={onMenu} title="返回开局界面，选择其他模组、剧本或国家">
+        主菜单
+      </button>
     </header>
   );
 }
 
 /* ───────────── 地块情报 ───────────── */
 
-export function ProvincePanel({ state, catalog, act }: { state: GameState; catalog: Catalog; act: Act }) {
-  const prov = state.map.provinces[state.selected_province];
-  const terrain = catalog.terrains.find((t) => t.id === prov.terrain)!;
-  const fullName = catalog.provinces.find((p) => p.id === prov.id)?.name ?? prov.name;
-  const occupied = prov.controller !== prov.original_owner;
+export function ProvincePanel({ state, act }: { state: GameState; act: Act }) {
+  const world = useWorld();
+  const prov = world.map.provinces[state.selected_province];
+  const controller = state.controllers[prov.id];
+  const terrain = world.terrains[prov.terrain];
+  const occupied = controller !== prov.owner;
+  const isCapital = world.capitals[prov.owner] === prov.id;
 
   return (
     <section className="panel">
-      <h2>{fullName}</h2>
+      <h2>
+        {prov.name} {isCapital && <span title="首都">★</span>}
+        {prov.name_en && <span className="muted"> {prov.name_en}</span>}
+      </h2>
       <dl className="facts">
         <dt>控制方</dt>
         <dd>
-          <CountryTag id={prov.controller} />
+          <CountryTag id={controller} /> {countryName(world, controller)}
           {occupied && (
             <span className="warn">
               {" "}
-              占领中（法理 <CountryTag id={prov.original_owner} />）
+              占领中（法理 <CountryTag id={prov.owner} />）
             </span>
           )}
         </dd>
@@ -116,11 +131,14 @@ export function ProvincePanel({ state, catalog, act }: { state: GameState; catal
         <dd>★ {prov.victory_points}</dd>
         <dt>地形</dt>
         <dd>
-          {terrain.name}
-          <span className="muted">
-            {" "}
-            攻 {Math.round(terrain.attack_modifier * 100)}% · 守 {Math.round(terrain.defense_modifier * 100)}%
-          </span>
+          {terrain?.name ?? prov.terrain}
+          {terrain && (
+            <span className="muted">
+              {" "}
+              攻 {Math.round(terrain.attack_modifier * 100)}% · 守 {Math.round(terrain.defense_modifier * 100)}% · 行军 ×
+              {terrain.movement_cost}
+            </span>
+          )}
         </dd>
         <dt>工业</dt>
         <dd>
@@ -133,8 +151,13 @@ export function ProvincePanel({ state, catalog, act }: { state: GameState; catal
         <dt>邻接</dt>
         <dd className="chips">
           {prov.neighbors.map((n) => (
-            <button key={n} className="chip" onClick={() => act({ type: "SelectProvince", args: n })}>
-              {state.map.provinces[n].name}
+            <button
+              key={n}
+              className="chip"
+              style={{ borderLeftColor: countryColor(world, state.controllers[n]) }}
+              onClick={() => act({ type: "SelectProvince", args: n })}
+            >
+              {world.map.provinces[n].name}
             </button>
           ))}
         </dd>
@@ -147,14 +170,14 @@ export function ProvincePanel({ state, catalog, act }: { state: GameState; catal
 
 interface DivisionPanelProps {
   state: GameState;
-  catalog: Catalog;
   act: Act;
   targeting: Targeting;
   startTargeting: (allUnits: boolean) => void;
   cancelTargeting: () => void;
 }
 
-export function DivisionPanel({ state, catalog, act, targeting, startTargeting, cancelTargeting }: DivisionPanelProps) {
+export function DivisionPanel({ state, act, targeting, startTargeting, cancelTargeting }: DivisionPanelProps) {
+  const world = useWorld();
   const units = divisionsIn(state, state.selected_province);
   const own = units.filter((d) => d.country === state.player_country);
   const selected = state.selected_division !== null ? state.divisions[state.selected_division] : undefined;
@@ -198,7 +221,7 @@ export function DivisionPanel({ state, catalog, act, targeting, startTargeting, 
                   onClick={() => act({ type: "SelectDivision", args: d.id })}
                 >
                   <CountryTag id={d.country} />
-                  <span className="unit-icon">{catalog.unit_types.find((u) => u.id === d.unit_type)?.icon}</span>
+                  <span className="unit-icon">{world.unit_types.find((u) => u.id === d.unit_type)?.icon}</span>
                   <span className="division-name">{d.name}</span>
                   <span className="bars">
                     <Meter value={d.organization} max={d.max_organization} tone="org" />
@@ -212,13 +235,14 @@ export function DivisionPanel({ state, catalog, act, targeting, startTargeting, 
         </ul>
       )}
 
-      {active && <DivisionCard division={active} catalog={catalog} />}
+      {active && <DivisionCard division={active} />}
     </section>
   );
 }
 
-function DivisionCard({ division: d, catalog }: { division: Division; catalog: Catalog }) {
-  const type = catalog.unit_types.find((u) => u.id === d.unit_type)!;
+function DivisionCard({ division: d }: { division: Division }) {
+  const world = useWorld();
+  const type = world.unit_types.find((u) => u.id === d.unit_type)!;
   return (
     <div className="division-card">
       <h3>
@@ -254,11 +278,11 @@ function DivisionCard({ division: d, catalog }: { division: Division; catalog: C
 
 /* ───────────── 军工生产 ───────────── */
 
-const PRODUCIBLE: UnitType[] = ["Infantry", "Motorized", "Panzer"];
-
-export function ProductionPanel({ state, catalog, act }: { state: GameState; catalog: Catalog; act: Act }) {
+export function ProductionPanel({ state, act }: { state: GameState; act: Act }) {
+  const world = useWorld();
   const player = state.countries[state.player_country];
-  const typeOf = (id: UnitType) => catalog.unit_types.find((u) => u.id === id)!;
+  const typeOf = (id: string) => world.unit_types.find((u) => u.id === id);
+  const units = world.unit_types;
   const assigned = player.production_queue.reduce((sum, line) => sum + line.assigned_factories, 0);
   const free = Math.max(0, player.mil_factories - assigned);
 
@@ -271,21 +295,18 @@ export function ProductionPanel({ state, catalog, act }: { state: GameState; cat
         </span>
       </h2>
       <div className="actions">
-        {PRODUCIBLE.map((id) => {
-          const t = typeOf(id);
-          return (
-            <button
-              key={id}
-              disabled={free === 0}
-              onClick={() => act({ type: "QueueProduction", args: id })}
-              title={free === 0 ? "没有空闲军工厂，请先撤销一条生产线" : `成本 ${t.production_cost} · 人力 ${t.manpower_cost / 1000}k`}
-            >
-              + {t.name}
-              {id === "Infantry" && <kbd>P</kbd>}
-              {id === "Panzer" && <kbd>⇧P</kbd>}
-            </button>
-          );
-        })}
+        {units.map((t, i) => (
+          <button
+            key={t.id}
+            disabled={free === 0}
+            onClick={() => act({ type: "QueueProduction", args: t.id })}
+            title={free === 0 ? "没有空闲军工厂，请先撤销一条生产线" : `成本 ${t.production_cost} · 人力 ${t.manpower_cost / 1000}k`}
+          >
+            + {t.name}
+            {i === 0 && <kbd>P</kbd>}
+            {i === units.length - 1 && i > 0 && <kbd>⇧P</kbd>}
+          </button>
+        ))}
       </div>
       {player.production_queue.length === 0 ? (
         <p className="muted">生产线空闲中。</p>
@@ -293,6 +314,7 @@ export function ProductionPanel({ state, catalog, act }: { state: GameState; cat
         <ul className="production-list">
           {player.production_queue.map((line, i) => {
             const t = typeOf(line.unit_type);
+            if (!t) return null;
             const waitingForManpower = line.progress >= t.production_cost;
             return (
               <li key={i}>
@@ -325,46 +347,69 @@ export function ProductionPanel({ state, catalog, act }: { state: GameState; cat
 /* ───────────── 外交 ───────────── */
 
 export function DiplomacyPanel({ state, act }: { state: GameState; act: Act }) {
+  const world = useWorld();
   const [confirming, setConfirming] = useState(false);
   const player = state.countries[state.player_country];
-  const next =
-    state.outcome === null
-      ? WAR_CANDIDATES.find((c) => !player.enemies.includes(c) && !state.countries[c].has_capitulated)
-      : undefined;
-  const vpShare = (id: CountryId) => {
-    const provs = Object.values(state.map.provinces);
-    const orig = provs.filter((p) => p.original_owner === id).reduce((s, p) => s + p.victory_points, 0);
-    const cur = provs.filter((p) => p.controller === id).reduce((s, p) => s + p.victory_points, 0);
-    return orig > 0 ? Math.round((cur / orig) * 100) : 0;
-  };
+  const faction = factionOf(world, state.player_country);
+
+  // 只列出与玩家相关的国家：交战国、盟友与列强
+  const relevant = Object.values(state.countries)
+    .filter(
+      (c) =>
+        c.id !== state.player_country &&
+        (player.enemies.includes(c.id) || areAllies(world, c.id, state.player_country) || world.scenario.majors.includes(c.id)),
+    )
+    .sort((a, b) => rank(a.id) - rank(b.id) || a.id.localeCompare(b.id));
+  function rank(id: CountryId) {
+    if (player.enemies.includes(id)) return 0;
+    if (areAllies(world, id, state.player_country)) return 1;
+    return 2;
+  }
+
+  // 宣战目标：选中地块的控制国
+  const target = state.controllers[state.selected_province];
+  const targetCountry = state.countries[target];
+  const canDeclare =
+    state.outcome === null &&
+    target !== state.player_country &&
+    !areAllies(world, target, state.player_country) &&
+    !player.enemies.includes(target) &&
+    targetCountry !== undefined &&
+    !targetCountry.has_capitulated;
+  const dragged = factionOf(world, target)?.members.filter((m) => m !== target && !state.countries[m]?.has_capitulated) ?? [];
 
   return (
     <section className="panel">
-      <h2>外交态势</h2>
+      <h2>
+        外交态势 <span className="muted">{faction ? faction.name : "不结盟"}</span>
+      </h2>
       <ul className="diplomacy-list">
-        {Object.values(state.countries)
-          .filter((c) => c.id !== state.player_country)
-          .map((c) => {
-            const status = c.has_capitulated ? "已投降" : player.enemies.includes(c.id) ? "交战中" : "中立";
-            return (
-              <li key={c.id}>
-                <CountryTag id={c.id} />
-                <span className={`relation ${c.has_capitulated ? "capitulated" : player.enemies.includes(c.id) ? "war" : "peace"}`}>
-                  {status}
-                </span>
-                <span className="muted">胜利点 {vpShare(c.id)}%</span>
-              </li>
-            );
-          })}
+        {relevant.map((c) => {
+          const atWar = player.enemies.includes(c.id);
+          const ally = areAllies(world, c.id, state.player_country);
+          const status = c.has_capitulated ? "已投降" : atWar ? "交战中" : ally ? "盟友" : "中立";
+          return (
+            <li key={c.id}>
+              <CountryTag id={c.id} />
+              <span className="country-name">{countryName(world, c.id)}</span>
+              <span className={`relation ${c.has_capitulated ? "capitulated" : atWar ? "war" : "peace"}`}>{status}</span>
+              <span className="muted">胜利点 {vpShare(world, state, c.id)}%</span>
+            </li>
+          );
+        })}
       </ul>
-      {next &&
+      {canDeclare &&
         (confirming ? (
           <div className="confirm">
-            <span>确认对 {COUNTRY_SHORT[next]} 宣战？世界紧张度将上升。</span>
+            <span>
+              确认对 {countryName(world, target)} 宣战？
+              {dragged.length > 0 && `其盟友 ${dragged.map((m) => countryName(world, m)).join("、")} 将一同参战。`}
+              世界紧张度将上升。
+            </span>
             <button
               className="danger"
               onClick={() => {
-                act({ type: "DeclareWarNextEnemy" });
+                act({ type: "DeclareWar", args: target });
                 setConfirming(false);
               }}
             >
@@ -373,8 +418,8 @@ export function DiplomacyPanel({ state, act }: { state: GameState; act: Act }) {
             <button onClick={() => setConfirming(false)}>取消</button>
           </div>
         ) : (
-          <button className="danger-outline" onClick={() => setConfirming(true)}>
-            对 {COUNTRY_SHORT[next]} 宣战…
+          <button className="danger-outline" onClick={() => setConfirming(true)} title="宣战对象为选中地块的控制国">
+            对 {countryName(world, target)} 宣战…
           </button>
         ))}
     </section>
@@ -403,16 +448,19 @@ export function LogPanel({ logs }: { logs: string[] }) {
 
 /* ───────────── 终局 ───────────── */
 
-export function OutcomeOverlay({ state, onRestart }: { state: GameState; onRestart: () => void }) {
+export function OutcomeOverlay({ state, onRestart, onMenu }: { state: GameState; onRestart: () => void; onMenu: () => void }) {
   if (state.outcome === null) return null;
   const victory = state.outcome === "Victory";
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="outcome-title">
       <div className={`overlay-card ${victory ? "victory" : "defeat"}`}>
         <h2 id="outcome-title">{victory ? "胜利" : "战败"}</h2>
-        <p>{victory ? "所有列强均已投降，欧陆战争以我方全面胜利告终。" : "我国已签署投降书，战争失败。"}</p>
+        <p>{victory ? "所有敌对列强均已投降，战争以我方全面胜利告终。" : "我国已签署投降书，战争失败。"}</p>
         <p className="muted">{formatDate(state.date)}</p>
-        <button onClick={onRestart}>重新开局</button>
+        <div className="actions">
+          <button onClick={onRestart}>重新开局</button>
+          <button onClick={onMenu}>主菜单</button>
+        </div>
       </div>
     </div>
   );

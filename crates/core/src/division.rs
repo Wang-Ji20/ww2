@@ -1,4 +1,5 @@
-use crate::types::{CountryId, ProvinceId, UnitType};
+use crate::modpack::UnitTypeDef;
+use crate::types::{CountryId, ProvinceId, UnitTypeId};
 
 pub type DivisionId = u32;
 
@@ -25,7 +26,7 @@ pub struct Division {
     pub name: String,
     pub country: CountryId,
     pub location: ProvinceId,
-    pub unit_type: UnitType,
+    pub unit_type: UnitTypeId,
     pub strength: f32,          // 0.0 ~ 100.0 (HP 百分比)
     pub organization: f32,      // 当前组织度
     pub max_organization: f32,  // 最大组织度
@@ -39,14 +40,14 @@ pub struct Division {
 
 impl Division {
     /// 纯函数构造师团
-    pub fn new(id: DivisionId, name: String, country: CountryId, location: ProvinceId, unit_type: UnitType) -> Self {
-        let stats = unit_type.base_stats();
+    pub fn new(id: DivisionId, name: String, country: CountryId, location: ProvinceId, unit_type: &UnitTypeDef) -> Self {
+        let stats = unit_type.stats;
         Self {
             id,
             name,
             country,
             location,
-            unit_type,
+            unit_type: unit_type.id.clone(),
             strength: 100.0,
             organization: stats.max_organization,
             max_organization: stats.max_organization,

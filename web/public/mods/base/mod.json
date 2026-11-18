@@ -1,0 +1,10 @@
+{
+  "id": "base",
+  "name": "基础规则",
+  "version": "1.0.0",
+  "description": "地形与兵种的基础定义，其他模组在此之上叠加。",
+  "depends": [],
+  "data": [
+    "rules.json"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "europe-mini",
+  "name": "欧陆微缩 1939",
+  "version": "1.0.0",
+  "description": "17 个省份的欧洲战局，原版硬编码地图的数据化移植。",
+  "depends": [
+    "base"
+  ],
+  "data": [
+    "countries.json",
+    "provinces.json",
+    "scenarios/1939.json"
+  ],
+  "map": null
+}
